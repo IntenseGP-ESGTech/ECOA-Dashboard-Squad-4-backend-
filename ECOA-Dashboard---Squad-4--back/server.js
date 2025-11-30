@@ -9,10 +9,12 @@ const registerRoutes = require('./src/routes/registerRoutes');
 const authRoutes = require('./src/routes/authRoutes');
 
 const app = express();
+const teamRoutes = require('./src/routes/teamRoutes');
 
 // Middlewares essenciais
 app.use(cors()); // Permite requisições de outras origens (seu frontend)
 app.use(express.json()); // Habilita o parsing de requisições com corpo em JSON
+app.use('/team', teamRoutes);
 
 const PORT = process.env.PORT || 3001;
 

@@ -32,17 +32,20 @@ const registerEmpresa = async (req, res) => {
 
 // Controller para cadastrar Funcionário
 const registerFuncionario = async (req, res) => {
-    const { email, matricula, senha } = req.body;
+    // Adicione 'nome' na extração do body
+    const { nome, email, matricula, senha } = req.body;
 
-    if (!email || !matricula || !senha) {
+    // Validação atualizada
+    if (!nome || !email || !matricula || !senha) {
         return res.status(400).json({ message: "Todos os campos são obrigatórios." });
     }
 
     try {
         const senhaHash = await bcrypt.hash(senha, 10);
+        // Query atualizada para incluir a coluna 'nome'
         await db.execute(
-            'INSERT INTO funcionarios (email_institucional, matricula, senha_hash) VALUES (?, ?, ?)',
-            [email, matricula, senhaHash]
+            'INSERT INTO funcionarios (nome, email_institucional, matricula, senha_hash) VALUES (?, ?, ?, ?)',
+            [nome, email, matricula, senhaHash]
         );
         res.status(201).json({ message: "Funcionário cadastrado com sucesso!" });
     } catch (error) {

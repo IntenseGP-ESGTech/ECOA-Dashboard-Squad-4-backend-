@@ -158,7 +158,11 @@ function App() {
             <Route
               path="/sair"
               element={
-                isAuthenticated ? <Sair /> : <Navigate to="/login" replace />
+                isAuthenticated ? (
+                  <Sair setIsAuthenticated={setIsAuthenticated} />
+                ) : (
+                  <Navigate to ="/" replace />
+                )
               }
             />
           </Routes>

@@ -4,6 +4,7 @@ import Botao from "../../componentes/botao/Botao";
 const API_URL = 'http://localhost:3001';
 
 export default function CadastroFuncionario() {
+    const [nome, setNome] = useState(''); // NOVO ESTADO
     const [email, setEmail] = useState('');
     const [matricula, setMatricula] = useState('');
     const [senha, setSenha] = useState('');
@@ -23,13 +24,15 @@ export default function CadastroFuncionario() {
             const response = await fetch(`${API_URL}/register/funcionario`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, matricula, senha }),
+                // Envia o nome no corpo da requisição
+                body: JSON.stringify({ nome, email, matricula, senha }),
             });
 
             const data = await response.json();
             if (!response.ok) throw new Error(data.message);
             
             setMensagem(data.message);
+            setNome(''); // Limpar nome
             setEmail('');
             setMatricula('');
             setSenha('');
@@ -42,6 +45,18 @@ export default function CadastroFuncionario() {
 
     return (
         <form className="form-cadastro" onSubmit={handleSubmit}>
+            {/* NOVO CAMPO DE NOME */}
+            <div>
+                <label htmlFor="nomeFunc">Nome Completo</label>
+                <input 
+                    type="text" 
+                    id="nomeFunc" 
+                    value={nome} 
+                    onChange={(e) => setNome(e.target.value)} 
+                    required 
+                />
+            </div>
+
             <div>
                 <label htmlFor="emailFunc">E-mail Institucional</label>
                 <input type="email" id="emailFunc" value={email} onChange={(e) => setEmail(e.target.value)} required />

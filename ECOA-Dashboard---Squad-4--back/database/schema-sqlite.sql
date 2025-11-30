@@ -15,11 +15,16 @@ CREATE TABLE empresas (
 );
 
 -- Tabela para Funcionários (Sintaxe SQLite)
+DROP TABLE IF EXISTS funcionarios;
+
 CREATE TABLE funcionarios (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT NOT NULL,
+    cargo TEXT,
     email_institucional TEXT NOT NULL UNIQUE,
-    matricula TEXT NOT NULL UNIQUE,
-    senha_hash TEXT NOT NULL,
+    telefone TEXT,
+    matricula TEXT,
+    senha_hash TEXT, -- Pode ser opcional se for apenas um cadastro de gestão
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 

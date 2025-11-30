@@ -3,19 +3,24 @@ import { Link, useNavigate } from "react-router-dom";
 import { LogOut, ArrowLeft, AlertTriangle } from "lucide-react";
 import './sair.css';
 
-function Sair() {
+// 1. Adiciona { setIsAuthenticated } aqui
+function Sair({ setIsAuthenticated }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
     setLoading(true);
     
-    // Simulando um processo de logout
     setTimeout(() => {
-      // Aqui você poderia limpar tokens, cookies, localStorage, etc.
+      // Limpar tokens
       localStorage.removeItem('authToken');
       
-      // Redirecionar para a página de login
+      // 2. ADICIONA ISTO: Atualizar o estado global para false
+      if (setIsAuthenticated) {
+        setIsAuthenticated(false);
+      }
+      
+      // Redirecionar para login
       navigate('/login');
     }, 1000);
   };
@@ -23,21 +28,11 @@ function Sair() {
   return (
     <div className="dashboard-background">
       <div className="sair-container">
-        <div className="sair-header">
-          <h1>Sair do Sistema</h1>
-        </div>
-
+        {/* ... (resto do código visual mantém-se igual) */}
+        
         <div className="sair-content">
-          <div className="sair-icon">
-            <AlertTriangle size={80} color="#dc3545" />
-          </div>
+          {/* ... */}
           
-          <h2>Tem certeza que deseja sair?</h2>
-          
-          <p className="sair-message">
-            Você será desconectado do sistema e precisará fazer login novamente para acessar o dashboard.
-          </p>
-
           <div className="sair-buttons">
             <Link to="/dashboard">
               <button className="sair-button cancel-button">
