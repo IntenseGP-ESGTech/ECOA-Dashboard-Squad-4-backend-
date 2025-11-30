@@ -1,9 +1,9 @@
 openapi: 3.0.0
 info:
   title: ECOA-Dashboard — Squad 4 (Backend)
-  version: 1.1.0
+  version: 1.2.0
   description: >
-    Documentação da API de Cadastro, Autenticação, Login com Google OAuth e JWT.
+    Documentação da API de Cadastro, Autenticação, Login com Google OAuth e Gestão de Equipa.
 
 servers:
   - url: http://localhost:3001
@@ -12,6 +12,8 @@ servers:
 tags:
   - name: Autenticação
     description: Login com email/senha e Google OAuth
+  - name: Gestão de Equipa
+    description: CRUD de funcionários com validação de domínio (Requer Token)
   - name: Cadastros
     description: Cadastro de Empresa, Funcionário, Representante e Filial
 
@@ -23,7 +25,7 @@ components:
       bearerFormat: JWT
 
   schemas:
-
+    # --- Schemas de Autenticação ---
     LoginRequest:
       type: object
       required:
@@ -68,6 +70,7 @@ components:
           email: "joao@gmail.com"
           picture: "https://lh3.googleusercontent.com/a/default.png"
 
+    # --- Schemas de Cadastro ---
     EmpresaRequest:
       type: object
       required:
@@ -92,16 +95,20 @@ components:
     FuncionarioRequest:
       type: object
       required:
+        - nome
         - email
         - matricula
         - senha
       properties:
+        nome:
+          type: string
+          example: "Carlos Souza"
         email:
           type: string
           example: funcionario@empresa.com
         matricula:
           type: string
-          example: 20240001
+          example: "20240001"
         senha:
           type: string
           example: "123456"
@@ -122,7 +129,7 @@ components:
           example: representante@empresa.com
         nomeCompleto:
           type: string
-          example: João Silva
+          example: "João Silva"
         senha:
           type: string
           example: "123456"
@@ -140,18 +147,38 @@ components:
           example: "98765432000199"
         codigoUnidade:
           type: string
-          example: UN001
+          example: "UN001"
         nomeSocial:
           type: string
-          example: Filial Recife
+          example: "Filial Recife"
         senha:
           type: string
           example: "123456"
 
+    # --- Schema para Gestão de Equipa ---
+    TeamMemberRequest:
+      type: object
+      required:
+        - nome
+        - email
+      properties:
+        nome:
+          type: string
+          example: "Maria Silva"
+        cargo:
+          type: string
+          example: "Gestora de Projetos"
+        email:
+          type: string
+          example: "maria@empresa.com"
+        telefone:
+          type: string
+          example: "11987654321"
+
 paths:
 
   # -------------------------
-  # LOGIN NORMAL
+  # AUTENTICAÇÃO
   # -------------------------
   /auth/login:
     post:
@@ -176,26 +203,18 @@ paths:
         "500":
           description: Erro interno
 
-  # -------------------------
-  # LOGIN GOOGLE — REDIRECIONAMENTO
-  # -------------------------
   /auth/google:
     get:
-      summary: Redireciona o usuário para o Google OAuth
+      summary: Redireciona o usuário para login com Google OAuth
       tags:
         - Autenticação
       responses:
         "302":
-          description: Redirecionamento para o Google OAuth
-        "500":
-          description: Erro no servidor
+          description: Redirecionamento para o Google
 
-  # -------------------------
-  # CALLBACK DO GOOGLE
-  # -------------------------
   /auth/google/callback:
     get:
-      summary: Callback do Google OAuth — retorna token JWT
+      summary: Callback do Google OAuth (retorna token JWT)
       tags:
         - Autenticação
       responses:
@@ -211,7 +230,94 @@ paths:
           description: Erro interno
 
   # -------------------------
-  # CADASTRO — EMPRESA
+  # GESTÃO DE EQUIPA (Protegido por Token)
+  # -------------------------
+  /team:
+    get:
+      summary: Listar membros da equipa
+      description: Retorna apenas os funcionários que possuem o mesmo domínio de e-mail do utilizador logado.
+      tags:
+        - Gestão de Equipa
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lista retornada com sucesso
+        "401":
+          description: Não autorizado (Token em falta)
+        "403":
+          description: Token inválido ou expirado
+        "500":
+          description: Erro interno
+
+    post:
+      summary: Adicionar novo membro
+      description: Adiciona um funcionário à equipa. O e-mail deve ter o mesmo domínio do utilizador logado.
+      tags:
+        - Gestão de Equipa
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamMemberRequest"
+      responses:
+        "201":
+          description: Membro adicionado com sucesso
+        "403":
+          description: Proibido (Tentativa de adicionar e-mail de outro domínio)
+        "500":
+          description: Erro ao adicionar
+
+  /team/{id}:
+    put:
+      summary: Atualizar dados de um membro
+      tags:
+        - Gestão de Equipa
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID do funcionário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamMemberRequest"
+      responses:
+        "200":
+          description: Atualizado com sucesso
+        "500":
+          description: Erro ao atualizar
+
+    delete:
+      summary: Remover um membro da equipa
+      tags:
+        - Gestão de Equipa
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: integer
+          required: true
+          description: ID do funcionário a remover
+      responses:
+        "200":
+          description: Removido com sucesso
+        "500":
+          description: Erro ao remover
+
+  # -------------------------
+  # CADASTROS (Público)
   # -------------------------
   /register/empresa:
     post:
@@ -232,12 +338,9 @@ paths:
         "500":
           description: Erro interno
 
-  # -------------------------
-  # CADASTRO — FUNCIONÁRIO
-  # -------------------------
   /register/funcionario:
     post:
-      summary: Cadastra um novo funcionário
+      summary: Cadastra um novo funcionário (com Nome)
       tags:
         - Cadastros
       requestBody:
@@ -254,9 +357,6 @@ paths:
         "500":
           description: Erro interno
 
-  # -------------------------
-  # CADASTRO — REPRESENTANTE
-  # -------------------------
   /register/representante:
     post:
       summary: Cadastra um novo representante
@@ -276,9 +376,6 @@ paths:
         "500":
           description: Erro interno
 
-  # -------------------------
-  # CADASTRO — FILIAL
-  # -------------------------
   /register/filial:
     post:
       summary: Cadastra uma nova filial
