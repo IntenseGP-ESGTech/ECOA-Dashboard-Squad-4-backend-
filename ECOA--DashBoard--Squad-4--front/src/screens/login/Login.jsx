@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Login.css";
 import Botao from "../../componentes/botao/Botao";
 import { FaUser, FaLock } from "react-icons/fa";
-import { authenticate } from "./auth";
+import { authenticate, loginWithGoogle } from "./auth";
 
 const Login = ({ setIsAuthenticated }) => {
   const [credentials, setCredentials] = useState({
@@ -22,8 +22,6 @@ const Login = ({ setIsAuthenticated }) => {
     }));
   };
 
-  // ... (imports e início do componente igual ao seu)
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -36,22 +34,16 @@ const Login = ({ setIsAuthenticated }) => {
     setError("");
 
     try {
-      // A chamada aqui não muda, pois a lógica está encapsulada em auth.js
       const authResult = await authenticate(
         credentials.email,
         credentials.password
       );
 
       if (authResult.success) {
-        // --- MUDANÇA PRINCIPAL AQUI ---
-        // 1. Salva o token recebido no localStorage
-        localStorage.setItem('authToken', authResult.token);
-
-        // 2. O resto continua igual
+        localStorage.setItem("authToken", authResult.token);
         setIsAuthenticated(true);
         navigate("/dashboard", { replace: true });
       } else {
-        // A mensagem de erro agora vem diretamente do backend!
         setError(authResult.message || "Credenciais inválidas. Tente novamente.");
       }
     } catch (err) {
@@ -66,6 +58,7 @@ const Login = ({ setIsAuthenticated }) => {
       <div className="login-container">
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="input-container">
+
             <div className="input-with-icon">
               <FaUser className="input-icon" />
               <input
@@ -101,11 +94,26 @@ const Login = ({ setIsAuthenticated }) => {
               className="login-button"
             />
 
+            {/* 🔥 BOTÃO GOOGLE */}
+            <button
+              type="button"
+              className="google-button"
+              onClick={loginWithGoogle}
+            >
+              <img
+                src="https://developers.google.com/identity/images/g-logo.png"
+                alt="Google Logo"
+                className="google-logo"
+              />
+              Entrar com Google
+            </button>
+
             <div className="linkforgetpassword">
               <a href="#recover" className="link-forget-password">
                 Esqueceu a senha?
               </a>
             </div>
+
           </div>
         </form>
       </div>

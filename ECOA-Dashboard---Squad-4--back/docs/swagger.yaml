@@ -1,0 +1,299 @@
+openapi: 3.0.0
+info:
+  title: ECOA-Dashboard — Squad 4 (Backend)
+  version: 1.1.0
+  description: >
+    Documentação da API de Cadastro, Autenticação, Login com Google OAuth e JWT.
+
+servers:
+  - url: http://localhost:3001
+    description: Servidor Local
+
+tags:
+  - name: Autenticação
+    description: Login com email/senha e Google OAuth
+  - name: Cadastros
+    description: Cadastro de Empresa, Funcionário, Representante e Filial
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - senha
+      properties:
+        email:
+          type: string
+          example: empresa@corp.com.br
+        senha:
+          type: string
+          example: "123456"
+
+    LoginResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Login bem-sucedido!
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+    GoogleLoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          type: object
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+            picture:
+              type: string
+      example:
+        token: "eyJhbGc..."
+        user:
+          name: "João da Silva"
+          email: "joao@gmail.com"
+          picture: "https://lh3.googleusercontent.com/a/default.png"
+
+    EmpresaRequest:
+      type: object
+      required:
+        - cnpj
+        - email
+        - nomeSocial
+        - senha
+      properties:
+        cnpj:
+          type: string
+          example: "12345678000190"
+        email:
+          type: string
+          example: empresa@gmail.com
+        nomeSocial:
+          type: string
+          example: Ecoa Tecnologia LTDA
+        senha:
+          type: string
+          example: "123456"
+
+    FuncionarioRequest:
+      type: object
+      required:
+        - email
+        - matricula
+        - senha
+      properties:
+        email:
+          type: string
+          example: funcionario@empresa.com
+        matricula:
+          type: string
+          example: 20240001
+        senha:
+          type: string
+          example: "123456"
+
+    RepresentanteRequest:
+      type: object
+      required:
+        - cpf
+        - email
+        - nomeCompleto
+        - senha
+      properties:
+        cpf:
+          type: string
+          example: "12345678901"
+        email:
+          type: string
+          example: representante@empresa.com
+        nomeCompleto:
+          type: string
+          example: João Silva
+        senha:
+          type: string
+          example: "123456"
+
+    FilialRequest:
+      type: object
+      required:
+        - cnpj
+        - codigoUnidade
+        - nomeSocial
+        - senha
+      properties:
+        cnpj:
+          type: string
+          example: "98765432000199"
+        codigoUnidade:
+          type: string
+          example: UN001
+        nomeSocial:
+          type: string
+          example: Filial Recife
+        senha:
+          type: string
+          example: "123456"
+
+paths:
+
+  # -------------------------
+  # LOGIN NORMAL
+  # -------------------------
+  /auth/login:
+    post:
+      summary: Realiza login e retorna um token JWT
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Credenciais inválidas
+        "500":
+          description: Erro interno
+
+  # -------------------------
+  # LOGIN GOOGLE — REDIRECIONAMENTO
+  # -------------------------
+  /auth/google:
+    get:
+      summary: Redireciona o usuário para o Google OAuth
+      tags:
+        - Autenticação
+      responses:
+        "302":
+          description: Redirecionamento para o Google OAuth
+        "500":
+          description: Erro no servidor
+
+  # -------------------------
+  # CALLBACK DO GOOGLE
+  # -------------------------
+  /auth/google/callback:
+    get:
+      summary: Callback do Google OAuth — retorna token JWT
+      tags:
+        - Autenticação
+      responses:
+        "200":
+          description: Login via Google realizado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GoogleLoginResponse"
+        "401":
+          description: Não autorizado
+        "500":
+          description: Erro interno
+
+  # -------------------------
+  # CADASTRO — EMPRESA
+  # -------------------------
+  /register/empresa:
+    post:
+      summary: Cadastra uma nova empresa
+      tags:
+        - Cadastros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmpresaRequest"
+      responses:
+        "201":
+          description: Empresa cadastrada com sucesso
+        "400":
+          description: Dados inválidos
+        "500":
+          description: Erro interno
+
+  # -------------------------
+  # CADASTRO — FUNCIONÁRIO
+  # -------------------------
+  /register/funcionario:
+    post:
+      summary: Cadastra um novo funcionário
+      tags:
+        - Cadastros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FuncionarioRequest"
+      responses:
+        "201":
+          description: Funcionário cadastrado
+        "400":
+          description: Campos obrigatórios ausentes
+        "500":
+          description: Erro interno
+
+  # -------------------------
+  # CADASTRO — REPRESENTANTE
+  # -------------------------
+  /register/representante:
+    post:
+      summary: Cadastra um novo representante
+      tags:
+        - Cadastros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RepresentanteRequest"
+      responses:
+        "201":
+          description: Representante cadastrado
+        "400":
+          description: Campos obrigatórios ausentes
+        "500":
+          description: Erro interno
+
+  # -------------------------
+  # CADASTRO — FILIAL
+  # -------------------------
+  /register/filial:
+    post:
+      summary: Cadastra uma nova filial
+      tags:
+        - Cadastros
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FilialRequest"
+      responses:
+        "201":
+          description: Filial cadastrada com sucesso
+        "400":
+          description: Campos obrigatórios ausentes
+        "500":
+          description: Erro interno

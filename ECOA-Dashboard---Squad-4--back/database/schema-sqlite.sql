@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS representantes;
 DROP TABLE IF EXISTS funcionarios;
 DROP TABLE IF EXISTS empresas;
 
+
 -- Tabela para Empresas (Sintaxe SQLite)
 CREATE TABLE empresas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,4 +47,10 @@ CREATE TABLE filiais (
     nome_social TEXT NOT NULL,
     senha_hash TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS usuarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nome TEXT,
+    email TEXT UNIQUE,
+    provider TEXT
 );
